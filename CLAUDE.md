@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Opcode is a desktop application that provides a GUI for managing Claude Code sessions, creating custom agents, tracking usage, and managing MCP servers. It's built as a Tauri 2 application with a React frontend and Rust backend.
+Opclaude is a desktop application that provides a GUI for managing Claude Code sessions, creating custom agents, tracking usage, and managing MCP servers. It's built as a Tauri 2 application with a React frontend and Rust backend.
 
 ## Build & Development Commands
 

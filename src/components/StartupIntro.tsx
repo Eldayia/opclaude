@@ -67,7 +67,7 @@ export function StartupIntro({ visible }: { visible: boolean }) {
                 />
                 <motion.img
                   src={opcodeLogo}
-                  alt="opcode"
+                  alt="opclaude"
                   className="h-20 w-20 rounded-lg shadow-sm"
                   transition={{ repeat: Infinity, repeatType: "loop", ease: "linear", duration: 0.5 }}
                 />
@@ -97,8 +97,8 @@ export default StartupIntro;
 function BrandText() {
   return (
     <div className="text-5xl font-extrabold tracking-tight brand-text">
-      <span className="brand-text-solid">opcode</span>
-      <span aria-hidden="true" className="brand-text-shimmer">opcode</span>
+      <span className="brand-text-solid">opclaude</span>
+      <span aria-hidden="true" className="brand-text-shimmer">opclaude</span>
     </div>
   );
 }

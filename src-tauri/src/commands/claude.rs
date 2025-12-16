@@ -237,7 +237,17 @@ fn create_command_with_env(program: &str) -> Command {
     // Convert std::process::Command to tokio::process::Command
     let _std_cmd = crate::claude_binary::create_command_with_env(program);
 
-    // Create a new tokio Command from the program path
+    // On Windows, .cmd files need to be executed through cmd.exe
+    #[cfg(windows)]
+    let mut tokio_cmd = if program.ends_with(".cmd") || program.ends_with(".bat") {
+        let mut cmd = Command::new("cmd.exe");
+        cmd.arg("/C").arg(program);
+        cmd
+    } else {
+        Command::new(program)
+    };
+
+    #[cfg(not(windows))]
     let mut tokio_cmd = Command::new(program);
 
     // Copy over all environment variables
@@ -254,6 +264,20 @@ fn create_command_with_env(program: &str) -> Command {
             || key == "NVM_BIN"
             || key == "HOMEBREW_PREFIX"
             || key == "HOMEBREW_CELLAR"
+            // Windows-specific environment variables
+            || key == "USERPROFILE"
+            || key == "APPDATA"
+            || key == "LOCALAPPDATA"
+            || key == "TEMP"
+            || key == "TMP"
+            || key == "HOMEDRIVE"
+            || key == "HOMEPATH"
+            || key == "SystemRoot"
+            || key == "COMSPEC"
+            || key == "PATHEXT"
+            || key == "ProgramFiles"
+            || key == "ProgramData"
+            || key == "CommonProgramFiles"
         {
             log::debug!("Inheriting env var: {}={}", key, value);
             tokio_cmd.env(&key, &value);

@@ -17,36 +17,40 @@ import { api, type Session } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 // Conditional imports for Tauri APIs
-let tauriListen: any;
 type UnlistenFn = () => void;
 
-try {
-  if (typeof window !== 'undefined' && window.__TAURI__) {
-    tauriListen = require("@tauri-apps/api/event").listen;
-  }
-} catch (e) {
-  console.log('[ClaudeCodeSession] Tauri APIs not available, using web mode');
-}
+// Import Tauri listen function - will be available in Tauri environment
+import { listen as tauriListenImport } from "@tauri-apps/api/event";
 
-// Web-compatible replacements
-const listen = tauriListen || ((eventName: string, callback: (event: any) => void) => {
-  console.log('[ClaudeCodeSession] Setting up DOM event listener for:', eventName);
+// Dynamic check for Tauri environment - checked at runtime, not import time
+// Uses same detection logic as apiAdapter.ts
+const isTauriEnv = () => {
+  if (typeof window === 'undefined') return false;
+  return !!(
+    (window as any).__TAURI__ ||
+    (window as any).__TAURI_METADATA__ ||
+    (window as any).__TAURI_INTERNALS__ ||
+    navigator.userAgent.includes('Tauri')
+  );
+};
+
+// Web-compatible replacements - check Tauri availability at call time
+const listen = (eventName: string, callback: (event: any) => void) => {
+  if (isTauriEnv()) {
+    return tauriListenImport(eventName, callback);
+  }
 
   // In web mode, listen for DOM events
   const domEventHandler = (event: any) => {
-    console.log('[ClaudeCodeSession] DOM event received:', eventName, event.detail);
-    // Simulate Tauri event structure
     callback({ payload: event.detail });
   };
 
   window.addEventListener(eventName, domEventHandler);
 
-  // Return unlisten function
   return Promise.resolve(() => {
-    console.log('[ClaudeCodeSession] Removing DOM event listener for:', eventName);
     window.removeEventListener(eventName, domEventHandler);
   });
-});
+};
 import { StreamMessage } from "./StreamMessage";
 import { FloatingPromptInput, type FloatingPromptInputRef } from "./FloatingPromptInput";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -146,6 +150,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
   const isListeningRef = useRef(false);
   const sessionStartTime = useRef<number>(Date.now());
   const isIMEComposingRef = useRef(false);
+  const processedMessagesRef = useRef<Set<string>>(new Set()); // Track processed messages to prevent duplicates
   
   // Session metrics state for enhanced analytics
   const sessionMetrics = useRef({
@@ -521,7 +526,10 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
         // Clean up previous listeners
         unlistenRefs.current.forEach(unlisten => unlisten());
         unlistenRefs.current = [];
-        
+
+        // Clear processed messages set for new prompt
+        processedMessagesRef.current.clear();
+
         // Mark as setting up listeners
         isListeningRef.current = true;
         
@@ -534,8 +542,9 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
         //   • Always start with GENERIC listeners (no suffix) so we catch the
         //     very first "system:init" message regardless of the session id.
         //   • Once that init message provides the *actual* session_id, we
-        //     dynamically switch to session-scoped listeners and stop the
-        //     generic ones to prevent duplicate handling.
+        //     add session-scoped listeners while keeping the generic ones.
+        //   • We use a Set (processedMessagesRef) to deduplicate messages that
+        //     arrive on both channels.
         // --------------------------------------------------------------------
 
         console.log('[ClaudeCodeSession] Setting up generic event listeners first');
@@ -543,6 +552,9 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
         let currentSessionId: string | null = claudeSessionId || effectiveSession?.id || null;
 
         // Helper to attach session-specific listeners **once we are sure**
+        // NOTE: We keep BOTH generic and session-specific listeners because the backend
+        // emits on both channels. This prevents race conditions where events are missed
+        // during the transition from generic to session-specific listeners.
         const attachSessionSpecificListeners = async (sid: string) => {
           console.log('[ClaudeCodeSession] Attaching session-specific listeners for', sid);
 
@@ -560,9 +572,9 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
             processComplete(evt.payload);
           });
 
-          // Replace existing unlisten refs with these new ones (after cleaning up)
-          unlistenRefs.current.forEach((u) => u());
-          unlistenRefs.current = [specificOutputUnlisten, specificErrorUnlisten, specificCompleteUnlisten];
+          // Add session-specific listeners WITHOUT removing generic ones
+          // The backend emits on both channels, so keeping both prevents missed events
+          unlistenRefs.current.push(specificOutputUnlisten, specificErrorUnlisten, specificCompleteUnlisten);
         };
 
         // Generic listeners (catch-all)
@@ -606,10 +618,10 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
           try {
             // Don't process if component unmounted
             if (!isMountedRef.current) return;
-            
+
             let message: ClaudeStreamMessage;
             let rawPayload: string;
-            
+
             if (typeof payload === 'string') {
               // Tauri mode: payload is a JSON string
               rawPayload = payload;
@@ -619,7 +631,15 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
               message = payload;
               rawPayload = JSON.stringify(payload);
             }
-            
+
+            // Deduplicate messages - since we listen on both generic and session-specific channels,
+            // the same message can arrive twice. Use rawPayload as unique key.
+            if (processedMessagesRef.current.has(rawPayload)) {
+              console.log('[ClaudeCodeSession] Skipping duplicate message');
+              return;
+            }
+            processedMessagesRef.current.add(rawPayload);
+
             console.log('[ClaudeCodeSession] handleStreamMessage - message type:', message.type);
 
             // Store raw JSONL
@@ -698,8 +718,18 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
           }
         }
 
+        // Track if processComplete has been called to prevent duplicate handling
+        let hasProcessedComplete = false;
+
         // Helper to handle completion events (both generic and scoped)
         const processComplete = async (success: boolean) => {
+          // Prevent duplicate completion handling since we listen on both channels
+          if (hasProcessedComplete) {
+            console.log('[ClaudeCodeSession] Skipping duplicate processComplete call');
+            return;
+          }
+          hasProcessedComplete = true;
+
           setIsLoading(false);
           hasActiveSessionRef.current = false;
           isListeningRef.current = false; // Reset listening state

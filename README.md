@@ -1,11 +1,14 @@
 
 <div align="center">
-  <img src="src-tauri/icons/icon.png" alt="opcode Logo" width="120" height="120">
+  <img src="src-tauri/icons/icon.png" alt="opclaude Logo" width="120" height="120">
 
-  <h1>opcode</h1>
-  
+  <h1>opclaude</h1>
+
   <p>
     <strong>A powerful GUI app and Toolkit for Claude Code</strong>
+  </p>
+  <p>
+    <strong>Fork of <a href="https://github.com/getAsterisk/opcode">opcode</a> with updated dependencies and improved Windows support</strong>
   </p>
   <p>
     <strong>Create custom agents, manage interactive Claude Code sessions, run secure background agents, and more.</strong>
@@ -36,9 +39,18 @@ https://github.com/user-attachments/assets/6bceea0f-60b6-4c3e-a745-b891de00b8d0
 
 ## 🌟 Overview
 
-**opcode** is a powerful desktop application that transforms how you interact with Claude Code. Built with Tauri 2, it provides a beautiful GUI for managing your Claude Code sessions, creating custom agents, tracking usage, and much more.
+**opclaude** is a powerful desktop application that transforms how you interact with Claude Code. This is a fork of the original [opcode](https://github.com/getAsterisk/opcode) project, updated with modern dependencies and enhanced Windows support.
 
-Think of opcode as your command center for Claude Code - bridging the gap between the command-line tool and a visual experience that makes AI-assisted development more intuitive and productive.
+Built with Tauri 2, it provides a beautiful GUI for managing your Claude Code sessions, creating custom agents, tracking usage, and much more.
+
+Think of opclaude as your command center for Claude Code - bridging the gap between the command-line tool and a visual experience that makes AI-assisted development more intuitive and productive.
+
+### What's Different in This Fork?
+
+- **Enhanced Windows Support**: Fixed Claude Code execution issues on Windows, including proper handling of `.cmd` files and environment variables
+- **Updated Dependencies**: Modern dependency versions for improved stability
+- **Bug Fixes**: Resolved infinite loading loops and event listener issues
+- **Maintained Compatibility**: Fully compatible with the original opcode feature set
 
 ## 📋 Table of Contents
 
@@ -110,9 +122,9 @@ Think of opcode as your command center for Claude Code - bridging the gap betwee
 
 ### Getting Started
 
-1. **Launch opcode**: Open the application after installation
+1. **Launch opclaude**: Open the application after installation
 2. **Welcome Screen**: Choose between CC Agents or Projects
-3. **First Time Setup**: opcode will automatically detect your `~/.claude` directory
+3. **First Time Setup**: opclaude will automatically detect your `~/.claude` directory
 
 ### Managing Projects
 
@@ -167,7 +179,7 @@ Menu → MCP Manager → Add Server → Configure
 
 ### Prerequisites
 
-Before building opcode from source, ensure you have the following installed:
+Before building opclaude from source, ensure you have the following installed:
 
 #### System Requirements
 
@@ -310,17 +322,17 @@ After building, you can verify the application works:
 ```bash
 # Run the built executable directly
 # Linux/macOS
-./src-tauri/target/release/opcode
+./src-tauri/target/release/opclaude
 
 # Windows
-./src-tauri/target/release/opcode.exe
+./src-tauri/target/release/opclaude.exe
 ```
 
 ### Build Artifacts
 
 The build process creates several artifacts:
 
-- **Executable**: The main opcode application
+- **Executable**: The main opclaude application
 - **Installers** (when using `tauri build`):
   - `.deb` package (Linux)
   - `.AppImage` (Linux)
@@ -343,7 +355,7 @@ All artifacts are located in `src-tauri/target/release/`.
 ### Project Structure
 
 ```
-opcode/
+opclaude/
 ├── src/                   # React frontend
 │   ├── components/        # UI components
 │   ├── lib/               # API client & utilities
@@ -378,7 +390,7 @@ cd src-tauri && cargo fmt
 
 ## 🔒 Security
 
-opcode prioritizes your privacy and security:
+opclaude prioritizes your privacy and security:
 
 1. **Process Isolation**: Agents run in separate processes
 2. **Permission Control**: Configure file and network access per agent
@@ -415,13 +427,9 @@ This project is licensed under the AGPL License - see the [LICENSE](LICENSE) fil
     <strong>Made with ❤️ by the <a href="https://asterisk.so/">Asterisk</a></strong>
   </p>
   <p>
-    <a href="https://github.com/getAsterisk/opcode/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/getAsterisk/opcode/issues">Request Feature</a>
+    <a href="https://github.com/getAsterisk/opcode/issues">Report Bug to Original Project</a>
+  </p>
+  <p>
+    <em>This is a fork of the original <a href="https://github.com/getAsterisk/opcode">opcode</a> project by <a href="https://asterisk.so/">Asterisk</a></em>
   </p>
 </div>
-
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=getAsterisk/opcode&type=Date)](https://www.star-history.com/#getAsterisk/opcode&Date)

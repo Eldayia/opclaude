@@ -294,68 +294,69 @@ const FloatingPromptInputInner = (
 
   // Extract image paths from prompt text
   const extractImagePaths = (text: string): string[] => {
-    console.log('[extractImagePaths] Input text length:', text.length);
-    
-    // Updated regex to handle both quoted and unquoted paths
     // Pattern 1: @"path with spaces or data URLs" - quoted paths
     // Pattern 2: @path - unquoted paths (continues until @ or end)
     const quotedRegex = /@"([^"]+)"/g;
     const unquotedRegex = /@([^@\n\s]+)/g;
-    
-    const pathsSet = new Set<string>(); // Use Set to ensure uniqueness
-    
+
+    const pathsSet = new Set<string>();
+
     // First, extract quoted paths (including data URLs)
     let matches = Array.from(text.matchAll(quotedRegex));
-    console.log('[extractImagePaths] Quoted matches:', matches.length);
-    
+
     for (const match of matches) {
-      const path = match[1]; // No need to trim, quotes preserve exact path
-      console.log('[extractImagePaths] Processing quoted path:', path.startsWith('data:') ? 'data URL' : path);
-      
+      const path = match[1];
       // For data URLs, use as-is; for file paths, convert to absolute
-      const fullPath = path.startsWith('data:') 
-        ? path 
+      const fullPath = path.startsWith('data:')
+        ? path
         : (path.startsWith('/') ? path : (projectPath ? `${projectPath}/${path}` : path));
-      
+
       if (isImageFile(fullPath)) {
         pathsSet.add(fullPath);
       }
     }
-    
+
     // Remove quoted mentions from text to avoid double-matching
-    let textWithoutQuoted = text.replace(quotedRegex, '');
-    
+    const textWithoutQuoted = text.replace(quotedRegex, '');
+
     // Then extract unquoted paths (typically file paths)
     matches = Array.from(textWithoutQuoted.matchAll(unquotedRegex));
-    console.log('[extractImagePaths] Unquoted matches:', matches.length);
-    
+
     for (const match of matches) {
       const path = match[1].trim();
-      // Skip if it looks like a data URL fragment (shouldn't happen with proper quoting)
+      // Skip if it looks like a data URL fragment
       if (path.includes('data:')) continue;
-      
-      console.log('[extractImagePaths] Processing unquoted path:', path);
-      
+
       // Convert relative path to absolute if needed
       const fullPath = path.startsWith('/') ? path : (projectPath ? `${projectPath}/${path}` : path);
-      
+
       if (isImageFile(fullPath)) {
         pathsSet.add(fullPath);
       }
     }
 
-    const uniquePaths = Array.from(pathsSet);
-    console.log('[extractImagePaths] Final extracted paths (unique):', uniquePaths.length);
-    return uniquePaths;
+    return Array.from(pathsSet);
   };
 
-  // Update embedded images when prompt changes
+  // Update embedded images when prompt changes - merge with manually added images
   useEffect(() => {
-    console.log('[useEffect] Prompt changed:', prompt);
-    const imagePaths = extractImagePaths(prompt);
-    console.log('[useEffect] Setting embeddedImages to:', imagePaths);
-    setEmbeddedImages(imagePaths);
-    
+    const imagesFromPrompt = extractImagePaths(prompt);
+
+    setEmbeddedImages(current => {
+      // Keep manually added images (pasted data URLs not in prompt)
+      const manualImages = current.filter(
+        img => img.startsWith('data:') && !prompt.includes(`@"${img}"`)
+      );
+      // Combine: images from prompt + manually added images (no duplicates)
+      const combined = [...imagesFromPrompt];
+      for (const img of manualImages) {
+        if (!combined.includes(img)) {
+          combined.push(img);
+        }
+      }
+      return combined;
+    });
+
     // Auto-resize on prompt change (handles paste, programmatic changes, etc.)
     if (textareaRef.current && !isExpanded) {
       textareaRef.current.style.height = 'auto';
@@ -705,8 +706,18 @@ const FloatingPromptInputInner = (
       return;
     }
 
-    if (prompt.trim() && !disabled) {
+    // Allow sending if there's text OR embedded images
+    if ((prompt.trim() || embeddedImages.length > 0) && !disabled) {
       let finalPrompt = prompt.trim();
+
+      // Append pasted/embedded images that aren't already in the prompt as @mentions
+      const promptImagePaths = extractImagePaths(finalPrompt);
+      const imagesToAppend = embeddedImages.filter(img => !promptImagePaths.includes(img));
+
+      if (imagesToAppend.length > 0) {
+        const imageMentions = imagesToAppend.map(img => `@"${img}"`).join(' ');
+        finalPrompt = finalPrompt + (finalPrompt ? ' ' : '') + imageMentions;
+      }
 
       // Append thinking phrase if not auto mode
       const thinkingMode = THINKING_MODES.find(m => m.id === selectedThinkingMode);
@@ -765,7 +776,7 @@ const FloatingPromptInputInner = (
     for (const item of items) {
       if (item.type.startsWith('image/')) {
         e.preventDefault();
-        
+
         // Get the image blob
         const blob = item.getAsFile();
         if (!blob) continue;
@@ -775,24 +786,23 @@ const FloatingPromptInputInner = (
           const reader = new FileReader();
           reader.onload = () => {
             const base64Data = reader.result as string;
-            
-            // Add the base64 data URL directly to the prompt
-            setPrompt(currentPrompt => {
-              // Use the data URL directly as the image reference
-              const mention = `@"${base64Data}"`;
-              const newPrompt = currentPrompt + (currentPrompt.endsWith(' ') || currentPrompt === '' ? '' : ' ') + mention + ' ';
-              
-              // Focus the textarea and move cursor to end
-              setTimeout(() => {
-                const target = isExpanded ? expandedTextareaRef.current : textareaRef.current;
-                target?.focus();
-                target?.setSelectionRange(newPrompt.length, newPrompt.length);
-              }, 0);
 
-              return newPrompt;
+            // Add to embedded images without showing in the textarea
+            setEmbeddedImages(current => {
+              // Check for duplicates
+              if (current.includes(base64Data)) {
+                return current;
+              }
+              return [...current, base64Data];
             });
+
+            // Focus the textarea
+            setTimeout(() => {
+              const target = isExpanded ? expandedTextareaRef.current : textareaRef.current;
+              target?.focus();
+            }, 0);
           };
-          
+
           reader.readAsDataURL(blob);
         } catch (error) {
           console.error('Failed to paste image:', error);
@@ -816,22 +826,26 @@ const FloatingPromptInputInner = (
   };
 
   const handleRemoveImage = (index: number) => {
-    // Remove the corresponding @mention from the prompt
     const imagePath = embeddedImages[index];
-    
-    // For data URLs, we need to handle them specially since they're always quoted
+
+    // For data URLs (pasted images), check if it's in the prompt or just in embeddedImages
     if (imagePath.startsWith('data:')) {
-      // Simply remove the exact quoted data URL
       const quotedPath = `@"${imagePath}"`;
-      const newPrompt = prompt.replace(quotedPath, '').trim();
-      setPrompt(newPrompt);
+      if (prompt.includes(quotedPath)) {
+        // It's in the prompt, remove it from there
+        const newPrompt = prompt.replace(quotedPath, '').trim();
+        setPrompt(newPrompt);
+      } else {
+        // It's only in embeddedImages (pasted but not in text), remove from state directly
+        setEmbeddedImages(current => current.filter((_, i) => i !== index));
+      }
       return;
     }
-    
+
     // For file paths, use the original logic
     const escapedPath = imagePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const escapedRelativePath = imagePath.replace(projectPath + '/', '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    
+
     // Create patterns for both quoted and unquoted mentions
     const patterns = [
       // Quoted full path

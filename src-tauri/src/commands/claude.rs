@@ -967,6 +967,8 @@ pub async fn execute_claude_code(
         "stream-json".to_string(),
         "--verbose".to_string(),
         "--dangerously-skip-permissions".to_string(),
+        "--append-system-prompt".to_string(),
+        "IMPORTANT: Always respond in the same language as the user's message. If the user writes in French, respond in French. If the user writes in English, respond in English. Match the language of each message.".to_string(),
     ];
 
     let cmd = create_system_command(&claude_path, args, &project_path);
@@ -999,6 +1001,8 @@ pub async fn continue_claude_code(
         "stream-json".to_string(),
         "--verbose".to_string(),
         "--dangerously-skip-permissions".to_string(),
+        "--append-system-prompt".to_string(),
+        "IMPORTANT: Always respond in the same language as the user's message. If the user writes in French, respond in French. If the user writes in English, respond in English. Match the language of each message.".to_string(),
     ];
 
     let cmd = create_system_command(&claude_path, args, &project_path);
@@ -1034,6 +1038,8 @@ pub async fn resume_claude_code(
         "stream-json".to_string(),
         "--verbose".to_string(),
         "--dangerously-skip-permissions".to_string(),
+        "--append-system-prompt".to_string(),
+        "IMPORTANT: Always respond in the same language as the user's message. If the user writes in French, respond in French. If the user writes in English, respond in English. Match the language of each message.".to_string(),
     ];
 
     let cmd = create_system_command(&claude_path, args, &project_path);

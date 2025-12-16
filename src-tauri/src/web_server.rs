@@ -485,6 +485,7 @@ async fn execute_claude_command(
     // Create Claude command
     println!("[TRACE] Creating Claude command...");
     let mut cmd = Command::new(&claude_path);
+    let language_instruction = "IMPORTANT: Always respond in the same language as the user's message. If the user writes in French, respond in French. If the user writes in English, respond in English. Match the language of each message.";
     let args = [
         "-p",
         &prompt,
@@ -494,6 +495,8 @@ async fn execute_claude_command(
         "stream-json",
         "--verbose",
         "--dangerously-skip-permissions",
+        "--append-system-prompt",
+        language_instruction,
     ];
     cmd.args(args);
     cmd.current_dir(&project_path);
@@ -597,6 +600,7 @@ async fn continue_claude_command(
 
     // Create continue command
     let mut cmd = Command::new(&claude_path);
+    let language_instruction = "IMPORTANT: Always respond in the same language as the user's message. If the user writes in French, respond in French. If the user writes in English, respond in English. Match the language of each message.";
     cmd.args([
         "-c", // Continue flag
         "-p",
@@ -607,6 +611,8 @@ async fn continue_claude_command(
         "stream-json",
         "--verbose",
         "--dangerously-skip-permissions",
+        "--append-system-prompt",
+        language_instruction,
     ]);
     cmd.current_dir(&project_path);
     cmd.stdout(std::process::Stdio::piped());
@@ -684,6 +690,7 @@ async fn resume_claude_command(
     // Create resume command
     println!("[resume_claude_command] Creating command...");
     let mut cmd = Command::new(&claude_path);
+    let language_instruction = "IMPORTANT: Always respond in the same language as the user's message. If the user writes in French, respond in French. If the user writes in English, respond in English. Match the language of each message.";
     let args = [
         "--resume",
         &claude_session_id,
@@ -695,6 +702,8 @@ async fn resume_claude_command(
         "stream-json",
         "--verbose",
         "--dangerously-skip-permissions",
+        "--append-system-prompt",
+        language_instruction,
     ];
     cmd.args(args);
     cmd.current_dir(&project_path);

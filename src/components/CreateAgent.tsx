@@ -48,7 +48,7 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({
   const [selectedIcon, setSelectedIcon] = useState<AgentIconName>((agent?.icon as AgentIconName) || "bot");
   const [systemPrompt, setSystemPrompt] = useState(agent?.system_prompt || "");
   const [defaultTask, setDefaultTask] = useState(agent?.default_task || "");
-  const [model, setModel] = useState(agent?.model || "sonnet");
+  const [model, setModel] = useState<"sonnet" | "opus" | "haiku">((agent?.model === "haiku" || agent?.model === "opus") ? agent.model : "sonnet");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -241,13 +241,37 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({
                 <div className="flex flex-col sm:flex-row gap-2">
                   <motion.button
                     type="button"
+                    onClick={() => setModel("haiku")}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className={cn(
+                      "flex-1 px-4 py-3 rounded-md border transition-all",
+                      model === "haiku"
+                        ? "border-blue-500 bg-blue-500/10 text-blue-500"
+                        : "border-border hover:border-blue-500/50 hover:bg-accent"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Zap className={cn(
+                        "h-4 w-4",
+                        model === "haiku" ? "text-blue-500" : "text-muted-foreground"
+                      )} />
+                      <div className="text-left">
+                        <div className="text-body-small font-medium">Claude 4 Haiku</div>
+                        <div className="text-caption text-muted-foreground">Fastest, cost-effective</div>
+                      </div>
+                    </div>
+                  </motion.button>
+
+                  <motion.button
+                    type="button"
                     onClick={() => setModel("sonnet")}
                     whileTap={{ scale: 0.97 }}
                     transition={{ duration: 0.15 }}
                     className={cn(
                       "flex-1 px-4 py-3 rounded-md border transition-all",
-                      model === "sonnet" 
-                        ? "border-primary bg-primary/10 text-primary" 
+                      model === "sonnet"
+                        ? "border-primary bg-primary/10 text-primary"
                         : "border-border hover:border-primary/50 hover:bg-accent"
                     )}
                   >
@@ -262,7 +286,7 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({
                       </div>
                     </div>
                   </motion.button>
-                  
+
                   <motion.button
                     type="button"
                     onClick={() => setModel("opus")}
@@ -270,8 +294,8 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({
                     transition={{ duration: 0.15 }}
                     className={cn(
                       "flex-1 px-4 py-3 rounded-md border transition-all",
-                      model === "opus" 
-                        ? "border-primary bg-primary/10 text-primary" 
+                      model === "opus"
+                        ? "border-primary bg-primary/10 text-primary"
                         : "border-border hover:border-primary/50 hover:bg-accent"
                     )}
                   >

@@ -196,7 +196,7 @@ const MODELS: Model[] = [
     description: "Faster, efficient for most tasks",
     icon: <Zap className="h-3.5 w-3.5" />,
     shortName: "S",
-    color: "text-primary"
+    color: "text-yellow-500"
   },
   {
     id: "opus",
@@ -204,7 +204,7 @@ const MODELS: Model[] = [
     description: "More capable, better for complex tasks",
     icon: <Zap className="h-3.5 w-3.5" />,
     shortName: "O",
-    color: "text-primary"
+    color: "text-red-500"
   }
 ];
 

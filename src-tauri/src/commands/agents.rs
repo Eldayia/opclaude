@@ -1652,6 +1652,14 @@ fn create_command_with_env(program: &str) -> Command {
     // Create a new tokio Command from the program path
     let mut tokio_cmd = Command::new(program);
 
+    // On Windows, hide the console window
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        tokio_cmd.creation_flags(CREATE_NO_WINDOW);
+    }
+
     // Copy over all environment variables from the std::process::Command
     // This is a workaround since we can't directly convert between the two types
     for (key, value) in std::env::vars() {
@@ -1667,6 +1675,20 @@ fn create_command_with_env(program: &str) -> Command {
             || key == "NVM_BIN"
             || key == "HOMEBREW_PREFIX"
             || key == "HOMEBREW_CELLAR"
+            // Windows-specific environment variables
+            || key == "USERPROFILE"
+            || key == "APPDATA"
+            || key == "LOCALAPPDATA"
+            || key == "TEMP"
+            || key == "TMP"
+            || key == "HOMEDRIVE"
+            || key == "HOMEPATH"
+            || key == "SystemRoot"
+            || key == "COMSPEC"
+            || key == "PATHEXT"
+            || key == "ProgramFiles"
+            || key == "ProgramData"
+            || key == "CommonProgramFiles"
         {
             tokio_cmd.env(&key, &value);
         }

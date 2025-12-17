@@ -110,7 +110,66 @@ impl<T> ApiResponse<T> {
 
 /// Serve the React frontend
 async fn serve_frontend() -> Html<&'static str> {
-    Html(include_str!("../../dist/index.html"))
+    #[cfg(not(no_frontend_dist))]
+    {
+        Html(include_str!("../../dist/index.html"))
+    }
+
+    #[cfg(no_frontend_dist)]
+    {
+        Html(r#"<!DOCTYPE html>
+<html>
+<head>
+    <title>Opclaude - Build Required</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: #0f0f0f;
+            color: #e0e0e0;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+        }
+        h1 { color: #ff6b6b; }
+        code {
+            background: #1a1a1a;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .command {
+            background: #1a1a1a;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Frontend Not Built</h1>
+        <p>The frontend application has not been built yet.</p>
+        <p>Please run the following commands:</p>
+        <div class="command">
+            <code>bun install</code><br>
+            <code>bun run build</code>
+        </div>
+        <p>Then rebuild the Rust backend:</p>
+        <div class="command">
+            <code>cargo build</code>
+        </div>
+    </div>
+</body>
+</html>"#)
+    }
 }
 
 /// API endpoint to get projects (equivalent to Tauri command)

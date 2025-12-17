@@ -257,7 +257,7 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({
                         model === "haiku" ? "text-blue-500" : "text-muted-foreground"
                       )} />
                       <div className="text-left">
-                        <div className="text-body-small font-medium">Claude 4 Haiku</div>
+                        <div className="text-body-small font-medium">Claude Haiku 4.5</div>
                         <div className="text-caption text-muted-foreground">Fastest, cost-effective</div>
                       </div>
                     </div>
@@ -281,8 +281,8 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({
                         model === "sonnet" ? "text-primary" : "text-muted-foreground"
                       )} />
                       <div className="text-left">
-                        <div className="text-body-small font-medium">Claude 4 Sonnet</div>
-                        <div className="text-caption text-muted-foreground">Faster, efficient for most tasks</div>
+                        <div className="text-body-small font-medium">Claude Sonnet 4.5</div>
+                        <div className="text-caption text-muted-foreground">Balanced performance for most tasks</div>
                       </div>
                     </div>
                   </motion.button>
@@ -305,8 +305,8 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({
                         model === "opus" ? "text-primary" : "text-muted-foreground"
                       )} />
                       <div className="text-left">
-                        <div className="text-body-small font-medium">Claude 4 Opus</div>
-                        <div className="text-caption text-muted-foreground">More capable, better for complex tasks</div>
+                        <div className="text-body-small font-medium">Claude Opus 4.5</div>
+                        <div className="text-caption text-muted-foreground">Most capable, best for complex tasks</div>
                       </div>
                     </div>
                   </motion.button>

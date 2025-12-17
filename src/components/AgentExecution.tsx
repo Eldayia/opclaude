@@ -469,7 +469,7 @@ export const AgentExecution: React.FC<AgentExecutionProps> = ({
   const handleCopyAsMarkdown = async () => {
     let markdown = `# Agent Execution: ${agent.name}\n\n`;
     markdown += `**Task:** ${task}\n`;
-    markdown += `**Model:** ${model === 'opus' ? 'Claude 4 Opus' : 'Claude 4 Sonnet'}\n`;
+    markdown += `**Model:** ${model === 'opus' ? 'Claude Opus 4.5' : model === 'haiku' ? 'Claude Haiku 4.5' : 'Claude Sonnet 4.5'}\n`;
     markdown += `**Date:** ${new Date().toISOString()}\n\n`;
     markdown += `---\n\n`;
 
@@ -553,7 +553,7 @@ export const AgentExecution: React.FC<AgentExecutionProps> = ({
               <div>
                 <h1 className="text-heading-1">{agent.name}</h1>
                 <p className="mt-1 text-body-small text-muted-foreground">
-                  {isRunning ? 'Running' : messages.length > 0 ? 'Complete' : 'Ready'} • {model === 'opus' ? 'Claude 4 Opus' : 'Claude 4 Sonnet'}
+                  {isRunning ? 'Running' : messages.length > 0 ? 'Complete' : 'Ready'} • {model === 'opus' ? 'Claude Opus 4.5' : model === 'haiku' ? 'Claude Haiku 4.5' : 'Claude Sonnet 4.5'}
                 </p>
               </div>
             </div>
@@ -617,7 +617,7 @@ export const AgentExecution: React.FC<AgentExecutionProps> = ({
                       )}
                     </div>
                     <div className="text-left">
-                      <div className="text-body-small font-medium">Claude 4 Haiku</div>
+                      <div className="text-body-small font-medium">Claude Haiku 4.5</div>
                       <div className="text-caption text-muted-foreground">Fastest, cost-effective</div>
                     </div>
                   </div>
@@ -647,8 +647,8 @@ export const AgentExecution: React.FC<AgentExecutionProps> = ({
                       )}
                     </div>
                     <div className="text-left">
-                      <div className="text-body-small font-medium">Claude 4 Sonnet</div>
-                      <div className="text-caption text-muted-foreground">Faster, efficient</div>
+                      <div className="text-body-small font-medium">Claude Sonnet 4.5</div>
+                      <div className="text-caption text-muted-foreground">Balanced performance</div>
                     </div>
                   </div>
                 </motion.button>
@@ -677,8 +677,8 @@ export const AgentExecution: React.FC<AgentExecutionProps> = ({
                       )}
                     </div>
                     <div className="text-left">
-                      <div className="text-body-small font-medium">Claude 4 Opus</div>
-                      <div className="text-caption text-muted-foreground">More capable</div>
+                      <div className="text-body-small font-medium">Claude Opus 4.5</div>
+                      <div className="text-caption text-muted-foreground">Most capable</div>
                     </div>
                   </div>
                 </motion.button>

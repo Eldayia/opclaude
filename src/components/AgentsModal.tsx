@@ -378,7 +378,7 @@ export const AgentsModal: React.FC<AgentsModalProps> = ({ open, onOpenChange }) 
                               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                                 <span>Started: {formatISOTimestamp(run.created_at)}</span>
                                 <Badge variant="outline" className="text-xs">
-                                  {run.model === 'opus' ? 'Claude 4 Opus' : 'Claude 4 Sonnet'}
+                                  {run.model === 'opus' ? 'Claude Opus 4.5' : run.model === 'haiku' ? 'Claude Haiku 4.5' : 'Claude Sonnet 4.5'}
                                 </Badge>
                               </div>
                             </div>

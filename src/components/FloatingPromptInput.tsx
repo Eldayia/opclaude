@@ -184,7 +184,7 @@ type Model = {
 const MODELS: Model[] = [
   {
     id: "haiku",
-    name: "Claude 4 Haiku",
+    name: "Claude Haiku 4.5",
     description: "Fastest, cost-effective for simple tasks",
     icon: <Zap className="h-3.5 w-3.5" />,
     shortName: "H",
@@ -192,16 +192,16 @@ const MODELS: Model[] = [
   },
   {
     id: "sonnet",
-    name: "Claude 4 Sonnet",
-    description: "Faster, efficient for most tasks",
+    name: "Claude Sonnet 4.5",
+    description: "Balanced performance for most tasks",
     icon: <Zap className="h-3.5 w-3.5" />,
     shortName: "S",
     color: "text-yellow-500"
   },
   {
     id: "opus",
-    name: "Claude 4 Opus",
-    description: "More capable, better for complex tasks",
+    name: "Claude Opus 4.5",
+    description: "Most capable, best for complex tasks",
     icon: <Zap className="h-3.5 w-3.5" />,
     shortName: "O",
     color: "text-red-500"

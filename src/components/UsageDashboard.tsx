@@ -66,10 +66,18 @@ export const UsageDashboard: React.FC<UsageDashboardProps> = ({ }) => {
 
   const getModelDisplayName = useCallback((model: string): string => {
     const modelMap: Record<string, string> = {
-      "claude-4-opus": "Opus 4",
-      "claude-4-sonnet": "Sonnet 4",
-      "claude-3.5-sonnet": "Sonnet 3.5",
-      "claude-3-opus": "Opus 3",
+      // Latest 4.5 models
+      "claude-opus-4-5-20251101": "Opus 4.5",
+      "claude-sonnet-4-5-20250929": "Sonnet 4.5",
+      "claude-haiku-4-5": "Haiku 4.5",
+      // Legacy models
+      "claude-3-5-sonnet-20241022": "Sonnet 3.5",
+      "claude-3-5-haiku-20241022": "Haiku 3.5",
+      "claude-3-opus-20240229": "Opus 3",
+      // Short names used by Claude Code CLI
+      "opus": "Opus 4.5",
+      "sonnet": "Sonnet 4.5",
+      "haiku": "Haiku 4.5",
     };
     return modelMap[model] || model;
   }, []);
